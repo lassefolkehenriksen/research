@@ -101,9 +101,13 @@ p{max-width:68ch}
 footer{border-top:1px solid var(--line);padding:26px 0;font-size:.82rem;color:var(--muted)}
 .skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;background:#fff;padding:8px;border:1px solid var(--line)}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+#netbg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.55}
+.layout{position:relative;z-index:1}
+.theme,.contact-card{background:rgba(255,255,255,.82);backdrop-filter:blur(2px)}
 </style>
 </head>
 <body>
+<canvas id="netbg" aria-hidden="true"></canvas>
 <a class="skip" href="#about">Skip to content</a>
 <div class="layout">
   <aside class="sidebar">
@@ -230,7 +234,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:.82rem;color:va
   </div>
   <h3 class="pub-title">What makes a contact valuable? Hiring, organizational networks and the advantages of network closure</h3>
   <p class="pub-authors">Henriksen, L., T. Lyttelton and E. B. Bright</p>
-  <p class="pub-pitch">Tests which kinds of personal contacts actually help people get hired, using data on 72,173 hires in Denmark. Finds that contacts embedded in tight, closed workplace networks raise the chance of being hired by about half. Challenges the classic &quot;strength of weak ties&quot; emphasis on open networks. Winner of the 2025 Gould Prize.</p>
+  <p class="pub-pitch">Examines which kinds of personal contacts actually help people get hired, using Danish administrative data on hiring. Argues that contacts embedded in tight, closed workplace networks can be more valuable than the loosely connected ties emphasized by the classic &quot;strength of weak ties&quot; account. Reframes how network position translates into labor-market advantage.</p>
   <a class="pub-link doi" href="https://doi.org/10.1086/736352" target="_blank" rel="noopener">View at publisher →</a>
 </article>
 <article class="pub">
@@ -523,6 +527,80 @@ filt.addEventListener('click',e=>{
     p.style.display=(oaOnly && !hasPdf)?'none':'';
   });
 });
+</script>
+<script>
+(function(){
+  const canvas=document.getElementById('netbg');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // accent colour pulled from CSS variable
+  const accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#3a5a40';
+  let W,H,dpr,nodes=[],linkDist;
+
+  function rgba(hex,a){
+    const h=hex.replace('#','');
+    const r=parseInt(h.substring(0,2),16),g=parseInt(h.substring(2,4),16),b=parseInt(h.substring(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function init(){
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=W*dpr; canvas.height=H*dpr;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    // node count scales with screen area, kept sparse
+    const count=Math.round(Math.min(64,Math.max(26,(W*H)/26000)));
+    linkDist=Math.min(W,H)<700?150:190;
+    nodes=[];
+    for(let i=0;i<count;i++){
+      nodes.push({
+        x:Math.random()*W, y:Math.random()*H,
+        vx:(Math.random()-0.5)*0.18, vy:(Math.random()-0.5)*0.18,
+        r:1.1+Math.random()*2.2
+      });
+    }
+  }
+
+  function step(){
+    ctx.clearRect(0,0,W,H);
+    // edges
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const a=nodes[i],b=nodes[j];
+        const dx=a.x-b.x,dy=a.y-b.y;
+        const d=Math.hypot(dx,dy);
+        if(d<linkDist){
+          const t=1-d/linkDist;
+          ctx.strokeStyle=rgba(accent,0.16*t);
+          ctx.lineWidth=0.7;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+    }
+    // nodes
+    for(const n of nodes){
+      ctx.fillStyle=rgba(accent,0.5);
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();
+      if(!reduce){
+        n.x+=n.vx; n.y+=n.vy;
+        if(n.x<0||n.x>W) n.vx*=-1;
+        if(n.y<0||n.y>H) n.vy*=-1;
+      }
+    }
+    if(!reduce) requestAnimationFrame(step);
+  }
+
+  let resizeTimer;
+  window.addEventListener('resize',()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(()=>{init(); if(reduce) step();},200);
+  });
+
+  init();
+  step(); // draws once; animates further only if motion allowed
+})();
 </script>
 </body>
 </html>
