@@ -101,7 +101,7 @@ p{max-width:68ch}
 footer{border-top:1px solid var(--line);padding:26px 0;font-size:.82rem;color:var(--muted)}
 .skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;background:#fff;padding:8px;border:1px solid var(--line)}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-#netbg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.55}
+#netbg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.85}
 .layout{position:relative;z-index:1}
 .theme,.contact-card{background:rgba(255,255,255,.82);backdrop-filter:blur(2px)}
 </style>
@@ -135,7 +135,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:.82rem;color:va
       <p class="eyebrow">Sociologist</p>
       <h1 class="hero">How social networks shape power, inequality, and expertise.</h1>
       <p class="lead">I study how connections between people, organizations, and institutions shape outcomes in markets, governance, and the environment—combining social network analysis, organizational theory, and economic sociology.</p>
-      <p>From September 2026 I am Professor at the Department of Sociology, University of Copenhagen, where I also completed my own bachelor's and master's degrees. Over the past fifteen years—most recently at Copenhagen Business School—I have built an international profile in economic sociology, stratification, and social network analysis.</p>
+      <p>I am Professor of Sociology at the Department of Sociology, University of Copenhagen, and my main areas of research and teaching are economic sociology, political economy, social stratification, and social network analysis.</p>
       <p>My work uses a distinctly relational approach: I trace how concrete social relations reproduce or transform structures of power, influence, and reward. Methodologically I work across quantitative and qualitative traditions, increasingly with large-scale register and network data. My research has appeared in journals including the <em>American Journal of Sociology</em>, <em>Socio-Economic Review</em>, <em>Sociological Science</em>, and general-science outlets such as <em>Nature</em>, <em>Nature Human Behaviour</em>, and <em>PNAS</em>.</p>
     </section>
 
@@ -490,7 +490,7 @@ footer{border-top:1px solid var(--line);padding:26px 0;font-size:.82rem;color:va
       <h2>Get in touch</h2>
       <p>For inquiries, collaborations, or requests for full publication and teaching materials, please reach out.</p>
       <div class="contact-card">
-        <div class="contact-row"><span class="k">Email</span><span class="placeholder">[ add your UCPH email here ]</span></div>
+        <div class="contact-row"><span class="k">Email</span><a href="mailto:lfh@soc.ku.dk">lfh@soc.ku.dk</a></div>
         <div class="contact-row"><span class="k">Department</span><span>Department of Sociology, University of Copenhagen</span></div>
         <div class="contact-row"><span class="k">ORCID</span><a href="https://orcid.org/0000-0003-4271-6528" target="_blank" rel="noopener">0000-0003-4271-6528</a></div>
         <div class="contact-row"><span class="k">Scholar</span><a href="https://scholar.google.com/" target="_blank" rel="noopener">Google Scholar profile</a></div>
@@ -533,9 +533,9 @@ filt.addEventListener('click',e=>{
   const canvas=document.getElementById('netbg');
   if(!canvas) return;
   const ctx=canvas.getContext('2d');
-  const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const reduce=true; // static network: no motion
   // accent colour pulled from CSS variable
-  const accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#3a5a40';
+  const accent='#8a877f'; // neutral grey network
   let W,H,dpr,nodes=[],linkDist;
 
   function rgba(hex,a){
@@ -573,7 +573,7 @@ filt.addEventListener('click',e=>{
         const d=Math.hypot(dx,dy);
         if(d<linkDist){
           const t=1-d/linkDist;
-          ctx.strokeStyle=rgba(accent,0.16*t);
+          ctx.strokeStyle=rgba(accent,0.28*t);
           ctx.lineWidth=0.7;
           ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
         }
@@ -581,7 +581,7 @@ filt.addEventListener('click',e=>{
     }
     // nodes
     for(const n of nodes){
-      ctx.fillStyle=rgba(accent,0.5);
+      ctx.fillStyle=rgba(accent,0.6);
       ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();
       if(!reduce){
         n.x+=n.vx; n.y+=n.vy;
